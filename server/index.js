@@ -38,7 +38,7 @@ function createClient(socket) {
   return new Client(socket);
 }
 
-function createSession(id = createId(5), ctc, wager, numPlayers, rounds) {
+function createSession(id = createId(5), ctc = null, wager, numPlayers, rounds) {
   if (sessions.has(id)) {
     console.error(`Session ${id} already exists`);
     return null;
@@ -61,9 +61,9 @@ io.on("connection", (socket) => {
       leaveSession(session, client);
     }
     if (data.sessionId) {
-      session = getSession(data.sessionId) || createSession(data.sessionId,data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
+      session = getSession(data.sessionId) || createSession(data.sessionId,data.sessionWager,data.sessionNumP,data.sessionRounds);
     } else {
-      session = createSession(data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
+      session = createSession(data.sessionWager,data.sessionNumP,data.sessionRounds);
     }
     const sessionData = {
       sessionId: session.id,
