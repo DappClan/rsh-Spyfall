@@ -57,13 +57,13 @@ io.on("connection", (socket) => {
   let session;
 
   socket.on("join-session", (data) => {
-    if (session) {
+    if (!session) {
       leaveSession(session, client);
     }
     if (data.sessionId) {
       session = getSession(data.sessionId) || createSession(data.sessionId,data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
     } else {
-      session = createSession();
+      session = createSession(data.sessionId,data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
     }
     const sessionData = {
       sessionId: session.id,
