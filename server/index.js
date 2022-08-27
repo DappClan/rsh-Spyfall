@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
     if (data.sessionId) {
       session = getSession(data.sessionId) || createSession(data.sessionId,data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
     } else {
-      session = createSession(data.sessionId,data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
+      session = createSession(data.sessionCtc,data.sessionWager,data.sessionNumP,data.sessionRounds);
     }
     const sessionData = {
       sessionId: session.id,
