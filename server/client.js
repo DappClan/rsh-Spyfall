@@ -5,6 +5,7 @@ class Client {
     this.type = null;
     this.name = null;
     this.ready = false;
+    this.isSpy = false;
   }
 
   joinRoom(id,ctc,wager) {

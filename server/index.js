@@ -108,6 +108,18 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("vote-event", (data) => {
+    if (!session) {
+      socket.disconnect();
+    } else {
+      if (data.client.role == 'spy') {
+        //check if location is correct and send whether won or lost
+      } else {
+        //check if spy is correct and send whether won or lost
+      }
+    }
+  })
+
   socket.on("player-ready", (data) => {
     if (!session) {
       socket.disconnect();

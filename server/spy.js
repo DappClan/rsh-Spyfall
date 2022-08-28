@@ -37,13 +37,14 @@ function startGame(session, extendedMode) {
     gameLocations[Math.floor(Math.random() * locations.length)];
 
   clientsArray.forEach((client, index) => {
-    const isSpy = spyIndex === index;
+    client.isSpy = spyIndex === index;
     client.ready = false;
     client.send("start-game", {
-      spy: isSpy,
-      location: isSpy ? "?" : currentLocation,
+      spy: client.isSpy,
+      location: client.isSpy ? "?" : currentLocation,
       locations: gameLocations,
       first: firstQuestion,
+      client: client
     });
   });
   session.broadcastPeers();
