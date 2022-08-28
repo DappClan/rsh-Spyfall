@@ -60,22 +60,24 @@ io.on("connection", (socket) => {
     if (session) {
       leaveSession(session, client);
     }
-    if (data.sessionId) {
-      session = getSession(data.sessionId) || createSession(data.sessionWager,data.sessionNumP,data.sessionRounds,data.sessionId);
-    } else {
+
+    if(data.playerType == 'Admin') {
       session = createSession(data.sessionWager,data.sessionNumP,data.sessionRounds);
+    } else {
+      session = getSession(data.sessionId)
     }
     const sessionData = {
       sessionId: session.id,
       sessionCtc: session.ctc,
       sessionWager: session.wager,
       sessionNumP: session.numPlayers,
-      sessionRounds: session.rounds 
+      sessionRounds: session.rounds,
+      playerType: data.playerType,
     }
     client.send("session-created", sessionData);
     if (session) {
-      console.log("Created session:", sessionData);
       client.name = data.playerName;
+      client.type = data.playerType;
       if (session.join(client)) {
         session.broadcastPeers();
       } else {
@@ -83,6 +85,15 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+  socket.on("set-ctc", (data) => {
+    if(!session) {
+      session.disconnect();
+    } else {
+      session.ctc = data.sessionCtc
+      console.log(['after', session])
+    }
+  })
 
   socket.on("chat-event", (data) => {
     if (!session) {

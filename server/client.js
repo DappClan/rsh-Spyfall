@@ -2,6 +2,7 @@ class Client {
   constructor(socket) {
     this.socket = socket;
     this.avatar = null;
+    this.type = null;
     this.name = null;
     this.ready = false;
   }
