@@ -35,14 +35,14 @@ class Session {
       return false;
     }
 
-    if (this.clients.size === this.numPlayers) {
-      console.error("The game is full");
+    if (this.clients.size === this.numPlayers && this.avatars.length === 0) {
+      console.error("The game is full or server is past client limit");
       return false;
     }
 
     this.clients.add(client);
     // Join the socket.io room
-    client.joinRoom(this.id, this.ctc, this.wager);
+    client.joinRoom(this.id);
 
     const avatar = this.avatars.shift();
     client.avatar = avatar;

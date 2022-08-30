@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
 
     if(data.playerType == 'Admin') {
       session = createSession(data.sessionWager,data.sessionNumP,data.sessionRounds);
-    } else {
+    } else if (data.playerType === 'Player'){
       session = getSession(data.sessionId)
     }
     const sessionData = {
@@ -75,11 +75,13 @@ io.on("connection", (socket) => {
       sessionNumP: session.numPlayers,
       sessionRounds: session.rounds,
       playerType: data.playerType,
+      playerContract: data.playerContract,
     }
     client.send("session-created", sessionData);
     if (session) {
       client.name = data.playerName;
       client.type = data.playerType;
+      client.contract = data.playerContract;
       if (session.join(client)) {
         session.broadcastPeers();
       } else {
@@ -98,6 +100,17 @@ io.on("connection", (socket) => {
         console.log(['after', session])
       }
       
+    }
+  })
+
+  socket.on("set-player-ctc", async (data) => {
+    if(!session) {
+      session.disconnect()
+    } else {
+      if(!client.contract) {
+        console.log(data.playerContract)
+        client.contract = data.playerContract;
+      }
     }
   })
 

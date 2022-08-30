@@ -3,13 +3,14 @@ class Client {
     this.socket = socket;
     this.avatar = null;
     this.type = null;
+    this.contract = null;
     this.name = null;
     this.ready = false;
     this.isSpy = false;
   }
 
-  joinRoom(id,ctc,wager) {
-    this.socket.join(id,ctc,wager);
+  joinRoom(id) {
+    this.socket.join(id);
   }
 
   send(type, data) {
