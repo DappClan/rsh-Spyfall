@@ -52,6 +52,8 @@ function getSession(id) {
   return sessions.get(id);
 }
 
+
+
 io.on("connection", (socket) => {
   const client = createClient(socket);
   let session;
@@ -86,12 +88,16 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("set-ctc", (data) => {
+  socket.on("set-ctc", async (data) => {
     if(!session) {
       session.disconnect();
     } else {
-      session.ctc = data.sessionCtc
-      console.log(['after', session])
+      console.log(['before', session])
+      if(!session.ctc) {
+        await session.setCtc(data.ctc)
+        console.log(['after', session])
+      }
+      
     }
   })
 

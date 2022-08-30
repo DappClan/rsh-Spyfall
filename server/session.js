@@ -58,6 +58,10 @@ class Session {
     return true;
   }
 
+  async setCtc(ctc){
+    this.ctc = ctc
+  }
+
   leave(client) {
     this.clients.delete(client);
     this.avatars.push(client.avatar);
