@@ -7,7 +7,7 @@ const http = require("http").createServer();
 const corsOptions = {
   cors: {
     origin: [
-      "https://testnet-spyfalling.herokuapp.com",
+      "https://spyfall-reach.herokuapp.com",
     ],
     methods: ["GET", "POST"],
   },
