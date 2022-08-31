@@ -53,11 +53,11 @@ function getSession(id) {
 }
 
 
-let id = 0;
+
 io.on("connection", (socket) => {
   const client = createClient(socket);
   let session;
-  
+  let id = 0;
 
   socket.on("join-session", (data) => {
     if (session) {
@@ -76,6 +76,7 @@ io.on("connection", (socket) => {
       sessionNumP: session.numPlayers,
       sessionRounds: session.rounds,
       sessionEvents: session.events,
+      sessionGameCtc: session.gameCtc,
       playerType: data.playerType,
       playerContract: data.playerContract,
     }
@@ -117,6 +118,19 @@ io.on("connection", (socket) => {
         console.log(data.playerContract)
         client.contract = data.playerContract;
         console.log(['after', client])
+      }
+    }
+  })
+
+  socket.on("set-game-ctc", async (data) => {
+    if(!session) {
+      session.disconnect()
+    } else {
+      console.log(['before', session])
+      if(!session.gameCtc) {
+        console.log(data.gameContract)
+        session.gameCtc = data.gameContract
+        console.log(['after', session])
       }
     }
   })
@@ -196,7 +210,6 @@ function leaveSession(session, client) {
   if (session) {
     session.leave(client);
     if (session.clients.size === 0) {
-      id = 0;
       sessions.delete(session.id);
       console.log("Sessions remaining:", sessions.size);
     } else {
