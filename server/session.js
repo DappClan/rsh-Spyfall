@@ -1,5 +1,5 @@
 class Session {
-  constructor(id, io, ctc, wager, numPlayers, rounds, timer) {
+  constructor(id, io, ctc, wager, numPlayers, rounds, timer,events) {
     this.id = id; 
     this.ctc = ctc; 
     this.wager = wager; 
@@ -7,6 +7,7 @@ class Session {
     this.io = io; 
     this.rounds = rounds; // Game logic
     this.timer = timer; // Game logic ...overlook
+    this.events = events;
 
     this.clients = new Set();
     this.avatars = [
@@ -88,6 +89,10 @@ class Session {
       },
     };
     this.io.to(this.id).send(payload);
+  }
+
+  reach() {
+
   }
 }
 

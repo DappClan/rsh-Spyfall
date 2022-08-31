@@ -1,5 +1,6 @@
 class Client {
   constructor(socket) {
+    this.id =  null;
     this.socket = socket;
     this.avatar = null;
     this.type = null;
