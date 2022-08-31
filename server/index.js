@@ -76,6 +76,7 @@ io.on("connection", (socket) => {
       sessionNumP: session.numPlayers,
       sessionRounds: session.rounds,
       sessionEvents: session.events,
+      sessionGameCtc: session.gameCtc,
       playerType: data.playerType,
       playerContract: data.playerContract,
     }
