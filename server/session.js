@@ -1,5 +1,5 @@
 class Session {
-  constructor(id, io, ctc, wager, numPlayers, rounds, timer) {
+  constructor(id, io, ctc, wager, numPlayers, rounds, timer,events) {
     this.id = id; 
     this.ctc = ctc; 
     this.wager = wager; 
@@ -7,6 +7,7 @@ class Session {
     this.io = io; 
     this.rounds = rounds; // Game logic
     this.timer = timer; // Game logic ...overlook
+    this.events = events;
 
     this.clients = new Set();
     this.avatars = [
@@ -35,14 +36,14 @@ class Session {
       return false;
     }
 
-    if (this.clients.size === this.numPlayers) {
-      console.error("The game is full");
+    if (this.clients.size === this.numPlayers && this.avatars.length === 0) {
+      console.error("The game is full or server is past client limit");
       return false;
     }
 
     this.clients.add(client);
     // Join the socket.io room
-    client.joinRoom(this.id, this.ctc, this.wager);
+    client.joinRoom(this.id);
 
     const avatar = this.avatars.shift();
     client.avatar = avatar;
@@ -88,6 +89,10 @@ class Session {
       },
     };
     this.io.to(this.id).send(payload);
+  }
+
+  reach() {
+
   }
 }
 

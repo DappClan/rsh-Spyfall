@@ -7,7 +7,7 @@ const http = require("http").createServer();
 const corsOptions = {
   cors: {
     origin: [
-      "https://spyfall-reach.herokuapp.com",
+      "https://spyfall-reach.vercel.app",
     ],
     methods: ["GET", "POST"],
   },
@@ -53,10 +53,11 @@ function getSession(id) {
 }
 
 
-
+let id = 0;
 io.on("connection", (socket) => {
   const client = createClient(socket);
   let session;
+  
 
   socket.on("join-session", (data) => {
     if (session) {
@@ -65,7 +66,7 @@ io.on("connection", (socket) => {
 
     if(data.playerType == 'Admin') {
       session = createSession(data.sessionWager,data.sessionNumP,data.sessionRounds);
-    } else {
+    } else if (data.playerType === 'Player'){
       session = getSession(data.sessionId)
     }
     const sessionData = {
@@ -74,12 +75,20 @@ io.on("connection", (socket) => {
       sessionWager: session.wager,
       sessionNumP: session.numPlayers,
       sessionRounds: session.rounds,
+      sessionEvents: session.events,
       playerType: data.playerType,
+      playerContract: data.playerContract,
     }
-    client.send("session-created", sessionData);
+    try{
+      client.send("session-created", sessionData);
+    } catch(e) {
+      console.log([`error:`, e])
+    }
     if (session) {
+      client.id = id + 1
       client.name = data.playerName;
       client.type = data.playerType;
+      client.contract = data.playerContract;
       if (session.join(client)) {
         session.broadcastPeers();
       } else {
@@ -92,12 +101,36 @@ io.on("connection", (socket) => {
     if(!session) {
       session.disconnect();
     } else {
-      console.log(['before', session])
       if(!session.ctc) {
         await session.setCtc(data.ctc)
-        console.log(['after', session])
       }
       
+    }
+  })
+
+  socket.on("set-player-ctc", async (data) => {
+    if(!session) {
+      session.disconnect()
+    } else {
+      console.log(['before', client])
+      if(!client.contract) {
+        console.log(data.playerContract)
+        client.contract = data.playerContract;
+        console.log(['after', client])
+      }
+    }
+  })
+
+  socket.on("set-reach-events", async (data) => {
+    if(!session){
+      session.disconnect()
+    } else {
+      console.log(['before', session])
+      if(!session.events) {
+        console.log(session.events)
+        session.events = data.events;
+        console.log(['after', session])
+      }
     }
   })
 
@@ -163,6 +196,7 @@ function leaveSession(session, client) {
   if (session) {
     session.leave(client);
     if (session.clients.size === 0) {
+      id = 0;
       sessions.delete(session.id);
       console.log("Sessions remaining:", sessions.size);
     } else {
