@@ -36,10 +36,3 @@ Run locally
 docker-compose up --build
 ```
 
-Push image to Docker Hub
-
-```sh
-docker-compose build
-docker image tag online-spy_web verybadfrags/online-spy
-docker push verybadfrags/online-spy
-```
