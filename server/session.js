@@ -1,5 +1,5 @@
 class Session {
-  constructor(id, io, ctc, wager, numPlayers, rounds, timer,events) {
+  constructor(id, io, ctc, wager, numPlayers, rounds, timer,gameCtc, events) {
     this.id = id; 
     this.ctc = ctc; 
     this.wager = wager; 
@@ -7,6 +7,7 @@ class Session {
     this.io = io; 
     this.rounds = rounds; // Game logic
     this.timer = timer; // Game logic ...overlook
+    this.gameCtc = gameCtc;
     this.events = events;
 
     this.clients = new Set();
