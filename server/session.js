@@ -1,5 +1,5 @@
 class Session {
-  constructor(id, io, ctc, wager, numPlayers, rounds, timer,gameCtc, events) {
+  constructor(id, io, ctc, wager, numPlayers, rounds, timer,gameCtc, events, participants){
     this.id = id; 
     this.ctc = ctc; 
     this.wager = wager; 
@@ -9,7 +9,10 @@ class Session {
     this.timer = timer; // Game logic ...overlook
     this.gameCtc = gameCtc;
     this.events = events;
+    this.participants = participants;
 
+
+    this.success = false;
     this.clients = new Set();
     this.avatars = [
       "🐱",
@@ -29,6 +32,20 @@ class Session {
       "🐬",
       "🦆",
     ];
+
+    this.currentLocation = undefined;
+    this.spyId = undefined;
+    this.winners = [];
+  }
+
+  //can be used to add multiple winners
+  addWinner(winner) {
+    this.winners.push(winner);
+  }
+
+  setLocationandSpy(location, spy) {
+    this.currentLocation = location;
+    this.spyId = spy;
   }
 
   join(client) {
@@ -43,6 +60,7 @@ class Session {
     }
 
     this.clients.add(client);
+    this.participants = this.clients.size;
     // Join the socket.io room
     client.joinRoom(this.id);
 
@@ -92,9 +110,19 @@ class Session {
     this.io.to(this.id).send(payload);
   }
 
-  reach() {
-
+  async reachSuccess(res) {
+    if(res === 'success'){
+      console.log(res)
+      this.success = true;
+    } else {
+      console.log(res)
+      this.success = false;
+    }
   }
+
+  async reachCall() {
+  }
+
 }
 
 module.exports = Session;

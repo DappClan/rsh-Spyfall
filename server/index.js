@@ -1,6 +1,6 @@
 const Session = require("./session");
 const Client = require("./client");
-const SpyGame = require("./spy");
+// const SpyGame = require("./spy");
 
 const http = require("http").createServer();
 
@@ -57,7 +57,6 @@ function getSession(id) {
 io.on("connection", (socket) => {
   const client = createClient(socket);
   let session;
-  let id = 0;
 
   socket.on("join-session", (data) => {
     if (session) {
@@ -77,6 +76,7 @@ io.on("connection", (socket) => {
       sessionRounds: session.rounds,
       sessionEvents: session.events,
       sessionGameCtc: session.gameCtc,
+      participants: session.participants,
       playerType: data.playerType,
       playerContract: data.playerContract,
     }
@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
       console.log([`error:`, e])
     }
     if (session) {
-      client.id = id + 1
+      client.id = data.participants;
       client.name = data.playerName;
       client.type = data.playerType;
       client.contract = data.playerContract;
@@ -105,48 +105,38 @@ io.on("connection", (socket) => {
       if(!session.ctc) {
         await session.setCtc(data.ctc)
       }
-      
     }
   })
-
+  // Each Player
   socket.on("set-player-ctc", async (data) => {
     if(!session) {
       session.disconnect()
     } else {
-      console.log(['before', client])
       if(!client.contract) {
-        console.log(data.playerContract)
         client.contract = data.playerContract;
-        console.log(['after', client])
       }
     }
   })
-
+  // On admin 
   socket.on("set-game-ctc", async (data) => {
     if(!session) {
       session.disconnect()
     } else {
-      console.log(['before', session])
       if(!session.gameCtc) {
-        console.log(data.gameContract)
         session.gameCtc = data.gameContract
-        console.log(['after', session])
       }
     }
   })
-
+  // on admin
   socket.on("set-reach-events", async (data) => {
     if(!session){
       session.disconnect()
     } else {
-      console.log(['before', session])
       if(!session.events) {
-        console.log(session.events)
         session.events = data.events;
-        console.log(['after', session])
       }
     }
-  })
+  });
 
   socket.on("chat-event", (data) => {
     if (!session) {
@@ -165,11 +155,27 @@ io.on("connection", (socket) => {
     if (!session) {
       socket.disconnect();
     } else {
-      if (data.client.role == 'spy') {
+      client.voted = true;
+      let win;
+      if (data.isSpy) {
         //check if location is correct and send whether won or lost
+        win = session.currentLocation == data.vote;
       } else {
         //check if spy is correct and send whether won or lost
+        win = session.spyId == data.vote;
       }
+
+      if(win) {
+        session.addWinner(client.id)
+      }
+      // const allVoted = Array.from(session.clients).reduce(
+      //   (acc, cli) => acc && cli.voted,
+      //   true
+      // );
+      client.send('vote-result', {
+        client: client,
+        winLose: win
+      });    
     }
   })
 
@@ -182,22 +188,42 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("start-game", () => {
+  socket.on("start-game", async () => {
     if (!session) {
       socket.disconnect();
     } else {
-      const allReady = Array.from(session.clients).reduce(
-        (acc, cli) => acc && cli.ready,
-        true
-      );
-      if (allReady) {
-        SpyGame.startGame(session);
-      } else {
-        client.send("chat-event", {
-          message: "All players must be ready",
-          color: "red",
-        });
-      }
+      // const allReady = Array.from(session.clients).reduce(
+      //   (acc, cli) => acc && cli.ready,
+      //   true
+      // );
+      //join
+      const clientsArray = Array.from(session.clients)
+      clientsArray.forEach(async (cli) => {
+        if(session.success === false) {
+          const data = {
+            events: session.events,
+            cliName: cli.name,
+            playerContract: cli.contract
+          }
+          cli.send("reach-callback", data);
+          socket.on("reach-success", async (data) => {
+            if(!session){
+              session.disconnect();
+            } else {
+              await session.reachSuccess(data.response)
+            }
+          })
+          session.success = false;
+        }
+      });
+      // if (allReady) {
+      //   SpyGame.startGame(session);
+      // } else {
+      //   client.send("chat-event", {
+      //     message: "All players must be ready",
+      //     color: "red",
+      //   });
+      // }
     }
   });
 
