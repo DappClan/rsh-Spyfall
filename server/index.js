@@ -172,18 +172,19 @@ io.on("connection", (socket) => {
         (acc, cli) => acc && cli.voted,
         true
       );
-      if(allVoted) {
-        client.send('vote-result', {
-          ...data,
-          winLose: win
-        })
-      } else {
-        client.send('chat-event', {
-          message: "Waiting for other players to vote",
-          author: null,
-          color: "green"
-        })
-      }      
+      client.send('vote-result', {
+        client: client,
+        winLose: win
+      })
+      // if(allVoted) {
+        
+      // } else {
+      //   client.send('chat-event', {
+      //     message: "Waiting for other players to vote",
+      //     author: null,
+      //     color: "green"
+      //   })
+      // }      
     }
   })
 
