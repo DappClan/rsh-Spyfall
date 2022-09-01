@@ -36,6 +36,8 @@ function startGame(session, extendedMode) {
   const currentLocation =
     gameLocations[Math.floor(Math.random() * locations.length)];
 
+  session.setLocationandSpy(currentLocation, spyIndex)
+
   clientsArray.forEach((client, index) => {
     client.isSpy = spyIndex === index;
     client.ready = false;

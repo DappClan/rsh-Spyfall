@@ -8,6 +8,7 @@ class Client {
     this.name = null;
     this.ready = false;
     this.isSpy = false;
+    this.voted = false;
   }
 
   joinRoom(id) {
