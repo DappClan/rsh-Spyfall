@@ -49,7 +49,7 @@ function startGame(session, extendedMode) {
       client: client
     });
   });
-  session.broadcastPeers();
+  session.broadcastPeers(clientsArray);
 }
 
 module.exports = { startGame };
