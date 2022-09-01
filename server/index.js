@@ -165,11 +165,35 @@ io.on("connection", (socket) => {
     if (!session) {
       socket.disconnect();
     } else {
-      if (data.client.role == 'spy') {
+      client.voted = true;
+      let win;
+      if (data.isSpy) {
         //check if location is correct and send whether won or lost
+        win = session.currentLocation == data.vote;
       } else {
         //check if spy is correct and send whether won or lost
+        win = session.spyId == data.vote;
       }
+
+      if(win) {
+        session.addWinner(client.id)
+      }
+      const allVoted = Array.from(session.clients).reduce(
+        (acc, cli) => acc && cli.voted,
+        true
+      );
+      if(allVoted) {
+        client.send('vote-result', {
+          ...data,
+          winLose: win
+        })
+      } else {
+        client.send('chat-event', {
+          message: "Waiting for other players to vote",
+          author: null,
+          color: "green"
+        })
+      }      
     }
   })
 

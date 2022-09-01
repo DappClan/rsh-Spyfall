@@ -29,6 +29,20 @@ class Session {
       "🐬",
       "🦆",
     ];
+
+    this.currentLocation = undefined;
+    this.spyId = undefined;
+    this.winners = [];
+  }
+
+  //can be used to add multiple winners
+  addWinner(winner) {
+    this.winners.push(winner);
+  }
+
+  setLocationandSpy(location, spy) {
+    this.currentLocation = location;
+    this.spyId = spy;
   }
 
   join(client) {
