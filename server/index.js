@@ -105,7 +105,6 @@ io.on("connection", (socket) => {
       if(!session.ctc) {
         await session.setCtc(data.ctc)
       }
-      
     }
   })
   // Each Player
@@ -113,11 +112,8 @@ io.on("connection", (socket) => {
     if(!session) {
       session.disconnect()
     } else {
-      console.log(['before', client])
       if(!client.contract) {
-        console.log(data.playerContract)
         client.contract = data.playerContract;
-        console.log(['after', client])
       }
     }
   })
@@ -126,11 +122,8 @@ io.on("connection", (socket) => {
     if(!session) {
       session.disconnect()
     } else {
-      console.log(['before', session])
       if(!session.gameCtc) {
-        console.log(data.gameContract)
         session.gameCtc = data.gameContract
-        console.log(['after', session])
       }
     }
   })
@@ -139,11 +132,8 @@ io.on("connection", (socket) => {
     if(!session){
       session.disconnect()
     } else {
-      console.log(['before', session])
       if(!session.events) {
-        console.log(session.events)
         session.events = data.events;
-        console.log(['after', session])
       }
     }
   })
