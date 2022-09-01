@@ -108,7 +108,7 @@ io.on("connection", (socket) => {
       
     }
   })
-
+  // Each Player
   socket.on("set-player-ctc", async (data) => {
     if(!session) {
       session.disconnect()
@@ -121,7 +121,7 @@ io.on("connection", (socket) => {
       }
     }
   })
-
+  // On admin 
   socket.on("set-game-ctc", async (data) => {
     if(!session) {
       session.disconnect()
@@ -134,7 +134,7 @@ io.on("connection", (socket) => {
       }
     }
   })
-
+  // on admin
   socket.on("set-reach-events", async (data) => {
     if(!session){
       session.disconnect()
