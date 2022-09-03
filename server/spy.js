@@ -47,7 +47,7 @@ function startGame(session, extendedMode,clientsArray) {
       first: firstQuestion,
     });
   });
-  session.broadcastPeers(clientsArray);
+  session.broadcastPeers();
 }
 
 module.exports = { startGame };
