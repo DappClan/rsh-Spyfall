@@ -96,7 +96,8 @@ class Session {
     this.io.to(this.id).emit('message',data);
   }
 
-  broadcastPeers(clientsArray) {
+  broadcastPeers() {
+    const clientsArray = Array.from(this.clients);
     const payload = {
       type: "session-broadcast",
       sessionId: this.id,
