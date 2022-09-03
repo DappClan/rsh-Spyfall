@@ -1,6 +1,6 @@
 const Session = require("./session");
 const Client = require("./client");
-// const SpyGame = require("./spy");
+const SpyGame = require("./spy");
 
 const http = require("http").createServer();
 
@@ -12,6 +12,8 @@ const corsOptions = {
     methods: ["GET", "POST"],
   },
 };
+
+// let done;
 
 const nodeEnv = process.env.NODE_ENV;
 console.log(`NODE_ENV=${nodeEnv}`);
@@ -49,7 +51,12 @@ function createSession( wager, numPlayers, rounds, id = createId(5), ctc = null 
 }
 
 function getSession(id) {
-  return sessions.get(id);
+  if(sessions.has(id)){
+    return sessions.get(id);
+  } else {
+    console.log(`no such session`)
+    return null
+  }
 }
 
 
@@ -57,6 +64,11 @@ function getSession(id) {
 io.on("connection", (socket) => {
   const client = createClient(socket);
   let session;
+
+  // async function isDone(done) {
+  //   return (done && session.success);
+  // }
+ 
 
   socket.on("join-session", (data) => {
     if (session) {
@@ -68,28 +80,31 @@ io.on("connection", (socket) => {
     } else if (data.playerType === 'Player'){
       session = getSession(data.sessionId)
     }
-    const sessionData = {
-      sessionId: session.id,
-      sessionCtc: session.ctc,
-      sessionWager: session.wager,
-      sessionNumP: session.numPlayers,
-      sessionRounds: session.rounds,
-      sessionEvents: session.events,
-      sessionGameCtc: session.gameCtc,
-      participants: session.participants,
-      playerType: data.playerType,
-      playerContract: data.playerContract,
-    }
     try{
+      const sessionData = {
+        sessionId: session.id,
+        sessionCtc: session.ctc,
+        sessionWager: session.wager,
+        sessionNumP: session.numPlayers,
+        sessionRounds: session.rounds,
+        sessionEvents: session.events,
+        sessionGameCtc: session.gameCtc,
+        participants: session.participants,
+        playerType: data.playerType,
+        // playerContract: data.playerContract,
+      }
+      console.log(sessionData);
       client.send("session-created", sessionData);
     } catch(e) {
       console.log([`error:`, e])
+      client.send("session-created", {sessionId: null});
     }
     if (session) {
-      client.id = data.participants;
+      console.log(`line 90 ${session.participants + 1}`)
+      client.id = session.participants + 1;
       client.name = data.playerName;
       client.type = data.playerType;
-      client.contract = data.playerContract;
+      // client.contract = data.playerContract;
       if (session.join(client)) {
         session.broadcastPeers();
       } else {
@@ -108,25 +123,25 @@ io.on("connection", (socket) => {
     }
   })
   // Each Player
-  socket.on("set-player-ctc", async (data) => {
-    if(!session) {
-      session.disconnect()
-    } else {
-      if(!client.contract) {
-        client.contract = data.playerContract;
-      }
-    }
-  })
+  // socket.on("set-player-ctc", async (data) => {
+  //   if(!session) {
+  //     session.disconnect()
+  //   } else {
+  //     if(!client.contract) {
+  //       client.contract = data.playerContract;
+  //     }
+  //   }
+  // })
   // On admin 
-  socket.on("set-game-ctc", async (data) => {
-    if(!session) {
-      session.disconnect()
-    } else {
-      if(!session.gameCtc) {
-        session.gameCtc = data.gameContract
-      }
-    }
-  })
+  // socket.on("set-game-ctc", async (data) => {
+  //   if(!session) {
+  //     session.disconnect()
+  //   } else {
+  //     if(!session.gameCtc) {
+  //       session.gameCtc = data.gameContract
+  //     }
+  //   }
+  // })
   // on admin
   socket.on("set-reach-events", async (data) => {
     if(!session){
@@ -168,10 +183,7 @@ io.on("connection", (socket) => {
       if(win) {
         session.addWinner(client.id)
       }
-      // const allVoted = Array.from(session.clients).reduce(
-      //   (acc, cli) => acc && cli.voted,
-      //   true
-      // );
+
       client.send('vote-result', {
         client: client,
         winLose: win
@@ -192,45 +204,81 @@ io.on("connection", (socket) => {
     if (!session) {
       socket.disconnect();
     } else {
-      // const allReady = Array.from(session.clients).reduce(
-      //   (acc, cli) => acc && cli.ready,
-      //   true
-      // );
-      //join
       const clientsArray = Array.from(session.clients)
-      clientsArray.forEach(async (cli) => {
-        if(session.success === false) {
-          const data = {
-            events: session.events,
-            cliName: cli.name,
-            playerContract: cli.contract
-          }
-          cli.send("reach-callback", data);
-          socket.on("reach-success", async (data) => {
-            if(!session){
-              session.disconnect();
-            } else {
-              await session.reachSuccess(data.response)
-            }
-          })
-          session.success = false;
+      const allReady = clientsArray.reduce(
+        (acc, cli) => acc && cli.ready,
+        true
+      );
+      //join
+      if(allReady){
+        if(parseInt(session.numPlayers) === session.participants) {
+          clientsArray.forEach(async (cli) => {
+              if(session.success === false) {
+                  const data = {
+                    phases: session.events,
+                    cliName: cli.name,
+                    participants: session.participants,
+                    cliIdx: cli.id,
+                  }
+                  if(cli.id === 1){
+                    cli.send("reach-callback",data);
+                  }
+              }
+          });
+        } else {
+          client.send("chat-event", {
+            message: "Number of players not reached",
+            color: "red",
+          });
         }
-      });
-      // if (allReady) {
-      //   SpyGame.startGame(session);
-      // } else {
-      //   client.send("chat-event", {
-      //     message: "All players must be ready",
-      //     color: "red",
-      //   });
-      // }
+      } else {
+        client.send("chat-event", {
+          message: "All players must be ready",
+          color: "red",
+        });
+      }
     }
   });
+
+  socket.on("reach-success", (dataJ) => {
+    if(!session) {
+      socket.disconnect()
+    } else {
+      const clientsArray = Array.from(session.clients)
+      const allReady = clientsArray.reduce(
+        (acc, cli) => acc && cli.ready,
+        true
+      );
+      session.reachSuccess(dataJ.response,dataJ.done)
+      session.success = false;
+      if(dataJ.id === 1){
+        session.events = dataJ.events;
+      }
+      clientsArray.forEach(async (cli) => {
+        if(session.success === false) {
+            const data = {
+              phases: session.events,
+              cliName: cli.name,
+              participants: session.participants,
+              cliIdx: cli.id,
+            }
+            if(cli.id === dataJ.id){
+              cli.send("reach-callback",data);
+            }
+        }
+      });
+      if (allReady && session.reachDone) {
+        SpyGame.startGame(session,false,clientsArray);
+      }
+    }
+  })
 
   socket.on("disconnect", () => {
     leaveSession(session, client);
   });
+
 });
+
 
 function leaveSession(session, client) {
   if (session) {

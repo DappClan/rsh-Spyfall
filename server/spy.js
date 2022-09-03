@@ -24,8 +24,7 @@ const extendedLocations = [
   "🍽👩‍🍳 Restaurant",
 ];
 
-function startGame(session, extendedMode) {
-  const clientsArray = Array.from(session.clients);
+function startGame(session, extendedMode,clientsArray) {
   const spyIndex = Math.floor(Math.random() * clientsArray.length);
   const firstQuestion =
     clientsArray[Math.floor(Math.random() * clientsArray.length)].name;
@@ -46,7 +45,6 @@ function startGame(session, extendedMode) {
       location: client.isSpy ? "?" : currentLocation,
       locations: gameLocations,
       first: firstQuestion,
-      client: client
     });
   });
   session.broadcastPeers(clientsArray);

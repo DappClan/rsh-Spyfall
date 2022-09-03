@@ -1,5 +1,5 @@
 class Session {
-  constructor(id, io, ctc, wager, numPlayers, rounds, timer,gameCtc, events, participants){
+  constructor(id, io, ctc, wager, numPlayers, rounds, timer,gameCtc, events,done){
     this.id = id; 
     this.ctc = ctc; 
     this.wager = wager; 
@@ -7,12 +7,14 @@ class Session {
     this.io = io; 
     this.rounds = rounds; // Game logic
     this.timer = timer; // Game logic ...overlook
-    this.gameCtc = gameCtc;
+    // this.gameCtc = gameCtc;
     this.events = events;
-    this.participants = participants;
+    this.participants = 0;
 
-
+    
+    this.reachDone = false;
     this.success = false;
+    this.done = done;
     this.clients = new Set();
     this.avatars = [
       "🐱",
@@ -60,6 +62,7 @@ class Session {
     }
 
     this.clients.add(client);
+    console.log(`line 64 ${this.clients.size}`)
     this.participants = this.clients.size;
     // Join the socket.io room
     client.joinRoom(this.id);
@@ -83,17 +86,17 @@ class Session {
   }
 
   leave(client) {
+    this.participants = this.participants - 1;
     this.clients.delete(client);
     this.avatars.push(client.avatar);
   }
 
   broadcast(type, data) {
     data.type = type;
-    this.io.to(this.id).send(data);
+    this.io.to(this.id).emit('message',data);
   }
 
-  broadcastPeers() {
-    const clientsArray = Array.from(this.clients);
+  broadcastPeers(clientsArray) {
     const payload = {
       type: "session-broadcast",
       sessionId: this.id,
@@ -107,22 +110,33 @@ class Session {
         }),
       },
     };
-    this.io.to(this.id).send(payload);
+    this.io.to(this.id).emit('message',payload);
   }
 
-  async reachSuccess(res) {
-    if(res === 'success'){
-      console.log(res)
-      this.success = true;
+  reachSuccess(res,done) {
+    if(done) {
+      if(res === 'success'){
+        console.log(res)
+        this.success = true;
+        this.reachDone = done;
+        return this.success
+      } else {
+        console.log(res)
+        this.success = false;
+        return this.success
+      }
     } else {
-      console.log(res)
-      this.success = false;
+      if(res === 'success'){
+        console.log(res)
+        this.success = true;
+        return this.success
+      } else {
+        console.log(res)
+        this.success = false;
+        return this.success
+      }
     }
   }
-
-  async reachCall() {
-  }
-
 }
 
 module.exports = Session;
