@@ -88,10 +88,8 @@ io.on("connection", (socket) => {
         sessionNumP: session.numPlayers,
         sessionRounds: session.rounds,
         sessionEvents: session.events,
-        sessionGameCtc: session.gameCtc,
         participants: session.participants,
         playerType: data.playerType,
-        // playerContract: data.playerContract,
       }
       console.log(sessionData);
       client.send("session-created", sessionData);
@@ -122,27 +120,17 @@ io.on("connection", (socket) => {
       }
     }
   })
-  // Each Player
-  // socket.on("set-player-ctc", async (data) => {
-  //   if(!session) {
-  //     session.disconnect()
-  //   } else {
-  //     if(!client.contract) {
-  //       client.contract = data.playerContract;
-  //     }
-  //   }
-  // })
-  // On admin 
-  // socket.on("set-game-ctc", async (data) => {
-  //   if(!session) {
-  //     session.disconnect()
-  //   } else {
-  //     if(!session.gameCtc) {
-  //       session.gameCtc = data.gameContract
-  //     }
-  //   }
-  // })
-  // on admin
+  socket.on("set-player-addr", (data) => {
+    if(!session){
+      session.disconnect();
+    } else {
+      if(!client.playerAddress){
+        console.log(`player Address ${data.playerAddress}`);
+        client.playerAddress = data.playerAddress
+      }
+    }
+  })
+
   socket.on("set-reach-events", async (data) => {
     if(!session){
       session.disconnect()
@@ -185,7 +173,7 @@ io.on("connection", (socket) => {
       }
 
       client.send('vote-result', {
-        client: client,
+        playerAddress: client.playerAddress,
         winLose: win
       });    
     }
@@ -245,10 +233,6 @@ io.on("connection", (socket) => {
       socket.disconnect()
     } else {
       const clientsArray = Array.from(session.clients)
-      const allReady = clientsArray.reduce(
-        (acc, cli) => acc && cli.ready,
-        true
-      );
       session.reachSuccess(dataJ.response,dataJ.done)
       session.success = false;
       if(dataJ.id === 1){
@@ -267,7 +251,7 @@ io.on("connection", (socket) => {
             }
         }
       });
-      if (allReady && session.reachDone) {
+      if (dataJ.done) {
         SpyGame.startGame(session,false,clientsArray);
       }
     }

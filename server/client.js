@@ -6,6 +6,7 @@ class Client {
     this.type = null;
     // this.contract = null;
     this.name = null;
+    this.playerAddress = null;
 
     this.ready = false;
     this.isSpy = false;

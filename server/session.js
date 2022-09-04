@@ -7,7 +7,6 @@ class Session {
     this.io = io; 
     this.rounds = rounds; // Game logic
     this.timer = timer; // Game logic ...overlook
-    // this.gameCtc = gameCtc;
     this.events = events;
     this.participants = 0;
 
